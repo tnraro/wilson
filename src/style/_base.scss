@@ -1,0 +1,5 @@
+@use "./color";
+
+body {
+  background: color.$slate-1;
+}

@@ -1,0 +1,19 @@
+:where(html) {
+  -moz-text-size-adjust: none;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+}
+
+:where(body, h1, h2, h3, p, figure) {
+  margin: 0;
+}
+
+:where(body) {
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+:where(input, button, textarea, select) {
+  font: unset;
+  color: unset;
+}
