@@ -1,4 +1,4 @@
-export const generateTextureAtlas = (items: { width: number, height: number, image: HTMLImageElement }[], width: number, height: number, padding = 8) => {
+export const generateTextureAtlas = (items: HTMLImageElement[], width: number, height: number, padding = 8) => {
   const offscreen = new OffscreenCanvas(width, height);
   const context = offscreen.getContext("2d")!;
   let aabbs: { x1: number; x2: number; y1: number; y2: number }[] = [];
@@ -38,7 +38,7 @@ export const generateTextureAtlas = (items: { width: number, height: number, ima
     const x2 = (aabb.x2 - padding) / offscreen.width;
     const y2 = (aabb.y2 - padding) / offscreen.height;
     context.drawImage(
-      item.image,
+      item,
       aabb.x1 + padding,
       aabb.y1 + padding,
       item.width,

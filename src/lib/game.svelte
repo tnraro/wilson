@@ -3,21 +3,20 @@
   import fruitTextureAtlas from "asset/fruits.webp";
   import fragmentShaderSource from "lib/gl/fruit.fragment.glsl?raw";
   import vertexShaderSource from "lib/gl/fruit.vertex.glsl?raw";
-  import { createProgram, createShader } from "lib/gl/webgl";
   import { onDestroy, onMount } from "svelte";
   import Canvas from "./canvas.svelte";
   import Cask from "./cask.svelte";
   import { Fruit, FruitConstants, fruitData, type No } from "./fruit";
   import { createGame, run, type Game } from "./game";
+  import {
+    initAttr,
+    initGl,
+    initProgram,
+    initUniform,
+    setRect,
+  } from "./gl/helper";
   import { lerp, multiply, rotation, scaling, translation } from "./math";
 
-  const setRect = (gl: WebGL2RenderingContext) => {
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5]),
-      gl.STATIC_DRAW
-    );
-  };
   const cask = { width: 5, height: 6, scale: 100 };
   const sx = (x: number) => {
     if (canvas == null || game == null) return 0;
@@ -32,8 +31,8 @@
   const vaos = {} as { [K in No]: WebGLVertexArrayObject };
   const createFruitVao = (
     gl: WebGL2RenderingContext,
-    a_position: number,
-    a_texcoord: number,
+    pos: number,
+    uv: number,
     no: No
   ) => {
     const vao = gl.createVertexArray()!;
@@ -42,8 +41,8 @@
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     setRect(gl);
-    gl.enableVertexAttribArray(a_position);
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(pos);
+    gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
 
     const texcoordBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, texcoordBuffer);
@@ -52,8 +51,8 @@
       new Float32Array(fruitUvs[no]),
       gl.STATIC_DRAW
     );
-    gl.enableVertexAttribArray(a_texcoord);
-    gl.vertexAttribPointer(a_texcoord, 2, gl.FLOAT, true, 0, 0);
+    gl.enableVertexAttribArray(uv);
+    gl.vertexAttribPointer(uv, 2, gl.FLOAT, true, 0, 0);
 
     vaos[no] = vao;
 
@@ -79,30 +78,22 @@
   let isSpawnDelaying = false;
 
   onMount(() => {
-    const gl = canvas.getContext("webgl2");
-    if (!gl) {
-      alert("can't use webgl2");
-      return;
-    }
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-    const fragmentShader = createShader(
-      gl,
-      gl.FRAGMENT_SHADER,
-      fragmentShaderSource
-    );
+    const gl = initGl(canvas);
 
-    const program = createProgram(gl, vertexShader, fragmentShader);
+    const program = initProgram(gl, vertexShaderSource, fragmentShaderSource);
 
-    const a_texcoord = gl.getAttribLocation(program, "a_texcoord");
-    const a_position = gl.getAttribLocation(program, "a_position");
+    const attrBy = initAttr(gl, program, {
+      uv: "uv",
+      pos: "pos",
+    });
 
-    const u_resolution = gl.getUniformLocation(program, "u_resolution");
-    const u_matrix = gl.getUniformLocation(program, "u_matrix");
+    const uniformBy = initUniform(gl, program, {
+      resolution: "resolution",
+      matrix: "matrix",
+    });
 
     for (const fruit of Object.values(fruitData)) {
-      createFruitVao(gl, a_position, a_texcoord, fruit.no);
+      createFruitVao(gl, attrBy.pos, attrBy.uv, fruit.no);
     }
 
     const texture = gl.createTexture();
@@ -192,7 +183,9 @@
               ) {
                 if (fruit.out(delta)) {
                   setTimeout(() => {
-                    alert(`게임 오버\n${game.score.signal.value}점\n(닫으면 재시작 됩니다)`);
+                    alert(
+                      `게임 오버\n${game.score.signal.value}점\n(닫으면 재시작 됩니다)`
+                    );
                     location.reload();
                   });
                   throw new Error("게임 오버");
@@ -214,7 +207,7 @@
             gl.useProgram(program);
 
             gl.uniform2f(
-              u_resolution,
+              uniformBy.resolution,
               game.options.cask.width,
               game.options.cask.height + 2
             );
@@ -241,14 +234,15 @@
 
               const loc = translation(pos.x, pos.y);
               const rot = rotation(-fruit.rotation);
-              const sca = scaling(radius * 2, radius * 2);
+              const scale = radius * 2 * 1.1;
+              const sca = scaling(scale, scale);
 
               let mat = multiply(sca, rot);
               mat = multiply(mat, loc);
 
               gl.bindVertexArray(vaos[fruit.no]);
 
-              gl.uniformMatrix3fv(u_matrix, false, mat);
+              gl.uniformMatrix3fv(uniformBy.matrix, false, mat);
 
               gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
             }
@@ -256,12 +250,13 @@
               const { radius } = fruitData[currentFruit];
 
               const loc = translation(mouseX, mouseY);
-              const sca = scaling(radius * 2, radius * 2);
+              const scale = radius * 2 * 1.1;
+              const sca = scaling(scale, scale);
 
               const mat = multiply(sca, loc);
 
               gl.bindVertexArray(vaos[currentFruit]);
-              gl.uniformMatrix3fv(u_matrix, false, mat);
+              gl.uniformMatrix3fv(uniformBy.matrix, false, mat);
               gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
             }
             {
@@ -275,7 +270,7 @@
               const mat = multiply(sca, loc);
 
               gl.bindVertexArray(vaos[nextFruit]);
-              gl.uniformMatrix3fv(u_matrix, false, mat);
+              gl.uniformMatrix3fv(uniformBy.matrix, false, mat);
               gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
             }
           },
@@ -305,7 +300,7 @@
             context.clearRect(0, 0, ui.width, ui.height);
             for (const fruit of game.fruits.signal.value) {
               const { pos, no, timer } = fruit;
-              const { radius, } = fruitData[no];
+              const { radius } = fruitData[no];
 
               const x = sx(pos.x);
               const y = sy(pos.y);
