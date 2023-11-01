@@ -8,7 +8,13 @@
   import Cask from "./cask.svelte";
   import { Fruit, FruitConstants, fruitData, type No } from "./fruit";
   import { createGame, run, type Game } from "./game";
-  import { initAttr, initGl, initProgram, setRect } from "./gl/helper";
+  import {
+    initAttr,
+    initGl,
+    initProgram,
+    initUniform,
+    setRect,
+  } from "./gl/helper";
   import { lerp, multiply, rotation, scaling, translation } from "./math";
 
   const cask = { width: 5, height: 6, scale: 100 };
@@ -81,7 +87,7 @@
       pos: "pos",
     });
 
-    const uniformBy = initAttr(gl, program, {
+    const uniformBy = initUniform(gl, program, {
       resolution: "resolution",
       matrix: "matrix",
     });
@@ -177,7 +183,9 @@
               ) {
                 if (fruit.out(delta)) {
                   setTimeout(() => {
-                    alert(`게임 오버\n${game.score.signal.value}점\n(닫으면 재시작 됩니다)`);
+                    alert(
+                      `게임 오버\n${game.score.signal.value}점\n(닫으면 재시작 됩니다)`
+                    );
                     location.reload();
                   });
                   throw new Error("게임 오버");
@@ -226,7 +234,8 @@
 
               const loc = translation(pos.x, pos.y);
               const rot = rotation(-fruit.rotation);
-              const sca = scaling(radius * 2, radius * 2);
+              const scale = radius * 2 * 1.1;
+              const sca = scaling(scale, scale);
 
               let mat = multiply(sca, rot);
               mat = multiply(mat, loc);
@@ -241,7 +250,8 @@
               const { radius } = fruitData[currentFruit];
 
               const loc = translation(mouseX, mouseY);
-              const sca = scaling(radius * 2, radius * 2);
+              const scale = radius * 2 * 1.1;
+              const sca = scaling(scale, scale);
 
               const mat = multiply(sca, loc);
 
@@ -290,7 +300,7 @@
             context.clearRect(0, 0, ui.width, ui.height);
             for (const fruit of game.fruits.signal.value) {
               const { pos, no, timer } = fruit;
-              const { radius, } = fruitData[no];
+              const { radius } = fruitData[no];
 
               const x = sx(pos.x);
               const y = sy(pos.y);

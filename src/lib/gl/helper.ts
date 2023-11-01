@@ -27,7 +27,7 @@ export const initUniform = <UniformNameBy extends Record<string, string>>(gl: We
 export const setRect = (gl: WebGL2RenderingContext) => {
   gl.bufferData(
     gl.ARRAY_BUFFER,
-    new Float32Array([-0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5]),
+    new Float32Array([0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5]),
     gl.STATIC_DRAW
   );
 };

@@ -1,0 +1,1 @@
+vips webpsave --strip --effort 6 --near-lossless fruits.png fruits.webp
