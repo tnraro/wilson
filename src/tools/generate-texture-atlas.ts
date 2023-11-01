@@ -27,4 +27,9 @@ context.transferFromImageBitmap(bitmap);
 
 document.body.append(canvas);
 
-console.log(JSON.stringify(uvs));
+const o: any = {};
+Object.values(uvs).forEach((uv, i) => {
+  o[i + 1] = uv;
+})
+
+console.log(JSON.stringify(o));
