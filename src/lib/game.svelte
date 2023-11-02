@@ -27,11 +27,11 @@
     game = createGame({
       cask,
       systems: [
-        new PromotionSystem(),
-        gameoverSystem,
         new Webgl2Renderer(canvas),
         new BackgroundRenderer(bg, cask.width, cask.height),
         new UiRenderer(ui, cask.width, cask.height),
+        new PromotionSystem(),
+        gameoverSystem,
       ],
     });
     unsubscribes.push(
