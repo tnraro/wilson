@@ -29,6 +29,7 @@ export const createGame = (options?: Partial<GameOptions>) => {
   const _score = createSignal(0)
   const _fruits = createSetSignal(new Set<Fruit>())
   const colliderToFruit = new WeakMap<Collider, Fruit>()
+  const isDangerousSignal = createSignal(false)
 
   const fruits = {
     add: (x: number, y: number) => {
@@ -77,6 +78,12 @@ export const createGame = (options?: Partial<GameOptions>) => {
     next,
     world,
     score,
+    context: {
+      mouseX: _options.cask.width / 2,
+      mouseY: _options.cask.height,
+      isSpawnDelaying: false,
+    },
+    isDangerousSignal
   }
 }
 
