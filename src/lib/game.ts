@@ -2,6 +2,7 @@ import { Collider } from '@dimforge/rapier2d';
 import { Fruit, type No } from './fruit'
 import { createCask, createFruit, createWorld } from './physics';
 import { createSetSignal, createSignal } from './signal'
+import { getHighscore, setHighscore } from './highscore';
 
 export type GameOptions = {
   cask: {
@@ -27,6 +28,7 @@ export const createGame = (options?: Partial<GameOptions>) => {
 
   const _next = createSignal<[No, No]>([1, 1])
   const _score = createSignal(0)
+  const _highscore = createSignal(getHighscore());
   const _fruits = createSetSignal(new Set<Fruit>())
   const colliderToFruit = new WeakMap<Collider, Fruit>()
   const isDangerousSignal = createSignal(false)
@@ -67,8 +69,14 @@ export const createGame = (options?: Partial<GameOptions>) => {
     append(value: number) {
       _score.set(_score.value + value)
     },
+    save() {
+      setHighscore(_score.value);
+    },
     get signal() {
       return _score
+    },
+    get highscore() {
+      return _highscore
     }
   }
 

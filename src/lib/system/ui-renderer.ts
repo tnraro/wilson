@@ -12,8 +12,33 @@ export class UiRenderer extends CanvasRenderer {
         this.#drawTimer(fruit);
       }
     }
+    this.#drawHighscore(game.score.highscore.value);
     this.#drawScore(game.score.signal.value);
     this.#drawNextText(game.options.cask.width);
+  }
+  #drawHighscore(highscore: number) {
+    if (highscore === 0) return;
+    const context = this.context;
+    const x = 0;
+    const y = this.sx(1 + 0.1);
+    const fontSize = this.sx(0.2);
+    const text = `최고 기록: ${highscore}점`;
+
+    context.font = `bold ${fontSize}px sans-serif`;
+    const gradient = context.createLinearGradient(
+      x,
+      y,
+      x + context.measureText(text).width,
+      y
+    );
+    gradient.addColorStop(0, "#6e6ade" /* iris-10 */);
+    gradient.addColorStop(1, "#9eb1ff" /* indigo-11 */);
+    context.textAlign = "start";
+    context.fillStyle = gradient;
+    context.strokeStyle = "black";
+    context.lineWidth = 4;
+    context.strokeText(text, x, y);
+    context.fillText(text, x, y);
   }
   #drawTimer(fruit: Fruit) {
     const context = this.context;
