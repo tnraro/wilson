@@ -11,8 +11,8 @@ export const createWorld = () => {
 
 export const createCask = (world: World, cask: { width: number, height: number }) => {
   world.createCollider(ColliderDesc.cuboid(cask.width, 0.1).setTranslation(0, -0.1));
-  world.createCollider(ColliderDesc.cuboid(cask.height + 100, 0.1).setRotation(-Math.PI / 2));
-  world.createCollider(ColliderDesc.cuboid(cask.height + 100, 0.1).setRotation(Math.PI / 2).setTranslation(cask.width, 0));
+  world.createCollider(ColliderDesc.cuboid(cask.height + 100, 0.1).setTranslation(-0.1, 0).setRotation(-Math.PI / 2).setFriction(0));
+  world.createCollider(ColliderDesc.cuboid(cask.height + 100, 0.1).setTranslation(cask.width + 0.1, 0).setRotation(Math.PI / 2).setFriction(0));
 }
 
 export const createFruit = (world: World, fruit: { no: No, x: number, y: number }) => {

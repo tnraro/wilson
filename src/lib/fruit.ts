@@ -15,7 +15,28 @@ export const noToRadius = (no: No) => (no ** 2) * 0.01 + 0.2;
 export const noToScore = (no: No) => Math.round(no * (no + 1) / 2);
 
 export const enum FruitConstants {
-  MaxTimer = 3,
+  MaxTimerTime = 3,
+}
+
+class Timer {
+  readonly maxTimerTime
+  readonly time
+
+  constructor(maxTimerTime: number) {
+    this.maxTimerTime = maxTimerTime
+    this.time = maxTimerTime
+  }
+  reset() {
+    // @ts-expect-error getter
+    this.time = this.maxTimerTime
+  }
+  count(deltaTime: number) {
+    // @ts-expect-error getter
+    this.time -= deltaTime
+  }
+  isDone() {
+    return this.time <= 0
+  }
 }
 
 export class Fruit {
@@ -24,8 +45,7 @@ export class Fruit {
   readonly rigidBody: RigidBody
   readonly collider: Collider
   // This is an abuse of readonly keyword as getter
-  readonly timer = FruitConstants.MaxTimer
-  readonly isOut = false;
+  readonly timer = new Timer(FruitConstants.MaxTimerTime)
   constructor(no: No, rigidBody: RigidBody) {
     this.no = no
     this.rigidBody = rigidBody
@@ -37,24 +57,12 @@ export class Fruit {
   get rotation() {
     return this.collider.rotation()
   }
-  out(delta: number) {
-    // @ts-expect-error This is an abuse of readonly keyword as getter
-    this.timer -= delta;
-    // @ts-expect-error This is an abuse of readonly keyword as getter
-    this.isOut = true;
-    return this.timer <= 0;
-  }
-  in() {
-    // @ts-expect-error This is an abuse of readonly keyword as getter
-    this.isOut = false;
-  }
   promote() {
     if (this.no < 11) {
       // @ts-expect-error This is an abuse of readonly keyword as getter
       this.no = (this.no + 1) as No;
       this.collider.setRadius(noToRadius(this.no));
-      // @ts-expect-error This is an abuse of readonly keyword as getter
-      this.timer = FruitConstants.MaxTimer;
+      this.timer.reset();
     }
   }
 }
