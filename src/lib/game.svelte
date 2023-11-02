@@ -181,7 +181,8 @@
                 pos.y > game.options.cask.height ||
                 pos.y < 0
               ) {
-                if (fruit.out(delta)) {
+                fruit.timer.count(delta);
+                if (fruit.timer.isDone()) {
                   setTimeout(() => {
                     alert(
                       `게임 오버\n${game.score.signal.value}점\n(닫으면 재시작 됩니다)`
@@ -306,7 +307,7 @@
               const y = sy(pos.y);
               const r = sx(radius);
 
-              if (timer < FruitConstants.MaxTimer) {
+              if (timer.time < FruitConstants.MaxTimerTime) {
                 const gradient = context.createRadialGradient(x, y, 0, x, y, r);
                 gradient.addColorStop(0, "red");
                 gradient.addColorStop(1, "transparent");
@@ -316,7 +317,7 @@
                 context.textAlign = "center";
                 context.textBaseline = "middle";
                 context.font = `bold ${r}px sans-serif`;
-                context.fillText(Math.ceil(timer) + "", x, y);
+                context.fillText(Math.ceil(timer.time) + "", x, y);
               }
             }
             {
