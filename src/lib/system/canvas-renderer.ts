@@ -15,13 +15,14 @@ export class CanvasRenderer implements ISystem {
   update(game: Game) {
   }
   sx(x: number) {
-    if (this.canvas == null) return 0;
     const scale = this.canvas.width / this.#width;
     return x * scale;
   };
   sy(y: number) {
-    if (this.canvas == null) return 0;
     const scale = this.canvas.height / (this.#height + 2);
     return (this.#height + 2 - y) * scale;
   };
+  clear() {
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
 }
