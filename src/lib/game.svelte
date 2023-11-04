@@ -15,9 +15,12 @@
   let canvas: HTMLCanvasElement;
   let ui: HTMLCanvasElement;
   let bg: HTMLCanvasElement;
+  let gameOver: HTMLDialogElement;
 
   let game: Game | undefined;
   let currentFruit: No = 1;
+
+  let score = 0
 
   let isDangerous = false;
 
@@ -40,6 +43,17 @@
       })
     );
     unsubscribes.push(
+      game.isRunningSignal.subscribe((value) => {
+        const isGameOver = !value;
+        if (isGameOver) {
+          console.log("게임 오버");
+          score = game?.score.signal.value ?? 0
+          game?.score.save();
+          gameOver.showModal();
+        }
+      })
+    );
+    unsubscribes.push(
       game.next.signal.subscribe((value) => {
         currentFruit = value[0];
       })
@@ -58,8 +72,14 @@
   {...cask}
   on:mouse={(e) => {
     if (game == null) return;
+    if (!game.isRunningSignal.value) {
+      return;
+    }
     const radius = fruitData[currentFruit].radius;
-    game.context.mouseX = Math.max(Math.min(e.detail.x, cask.width - radius), radius);
+    game.context.mouseX = Math.max(
+      Math.min(e.detail.x, cask.width - radius),
+      radius
+    );
     if (e.detail.type === "click") {
       if (game.context.isSpawnDelaying) return;
       game.context.isSpawnDelaying = true;
@@ -77,3 +97,53 @@
   <Canvas bind:canvas />
   <Canvas bind:canvas={ui} />
 </Cask>
+<dialog bind:this={gameOver}>
+  <form class="game-over">
+    <h1 class="game-over__title">{score}점</h1>
+    <button class="game-over__button" on:click={() => {
+      location.reload();
+    }}>다시하기</button>
+  </form>
+</dialog>
+
+
+<style lang="scss">
+  @use "../style/color";
+  dialog {
+    background: transparent;
+    padding: 0;
+    border: none;
+    outline: none;
+    overflow: visible;
+  }
+  .game-over {
+    display: flex;
+    flex-flow: column;
+    gap: 0.5rem;
+    user-select: none;
+    color: color.$slate-12;
+    background: rgba(color.$slate-3, 0.8);
+    padding: 1rem 1.5rem;
+    border-radius: 1rem;
+    box-sizing: border-box;
+    &__title {
+      font-size: 2rem;
+      font-weight: 900;
+    }
+    &__button {
+      appearance: none;
+      background: transparent;
+      outline: none;
+      border: none;
+      padding: 0.5rem 1rem;
+      color: color.$slate-12;
+      border-radius: 0.25rem;
+      &:active {
+        background: color.$slate-5;
+      }
+      &:focus {
+        outline: 2px solid color.$slate-7;
+      }
+    }
+  }
+</style>

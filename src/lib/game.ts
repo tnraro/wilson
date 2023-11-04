@@ -32,6 +32,7 @@ export const createGame = (options?: Partial<GameOptions>) => {
   const _fruits = createSetSignal(new Set<Fruit>())
   const colliderToFruit = new WeakMap<Collider, Fruit>()
   const isDangerousSignal = createSignal(false)
+  const isRunningSignal = createSignal(true);
 
   const fruits = {
     add: (x: number, y: number) => {
@@ -91,15 +92,15 @@ export const createGame = (options?: Partial<GameOptions>) => {
       mouseY: _options.cask.height,
       isSpawnDelaying: false,
     },
-    isDangerousSignal
+    isDangerousSignal,
+    isRunningSignal,
   }
 }
 
 export const run = (game: Game) => {
-  let isRunning = true;
   let lastTime = Date.now();
   const _run = () => {
-    if (!isRunning) return
+    if (!game.isRunningSignal.value) return
     game.world.step()
 
     const now = Date.now()
@@ -112,5 +113,7 @@ export const run = (game: Game) => {
     requestAnimationFrame(_run)
   }
   _run()
-  return () => isRunning = false
+  return () => {
+    game.isRunningSignal.set(false);
+  }
 }

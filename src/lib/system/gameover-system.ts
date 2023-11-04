@@ -15,14 +15,7 @@ export const gameoverSystem: ISystem = {
       ) {
         fruit.timer.count(delta);
         if (fruit.timer.isDone()) {
-          setTimeout(() => {
-            game.score.save();
-            alert(
-              `게임 오버\n${game.score.signal.value}점\n(닫으면 재시작 됩니다)`
-            );
-            location.reload();
-          });
-          throw new Error("게임 오버");
+          game.isRunningSignal.set(false);
         }
         game.isDangerousSignal.set(true);
       }
