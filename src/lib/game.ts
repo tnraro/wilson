@@ -3,6 +3,7 @@ import { Fruit, type No } from './fruit'
 import { createCask, createFruit, createWorld } from './physics';
 import { createSetSignal, createSignal } from './signal'
 import { getHighscore, setHighscore } from './highscore';
+import { createBag } from './bag';
 
 export type GameOptions = {
   cask: {
@@ -26,7 +27,10 @@ export const createGame = (options?: Partial<GameOptions>) => {
   const world = createWorld()
   createCask(world, _options.cask)
 
-  const _next = createSignal<[No, No]>([1, 1])
+  const pop = createBag(5);
+  const nextFruit = () => pop() + 1 as No
+
+  const _next = createSignal<[No, No]>([nextFruit(), nextFruit()])
   const _score = createSignal(0)
   const _highscore = createSignal(getHighscore());
   const _fruits = createSetSignal(new Set<Fruit>())
@@ -59,7 +63,7 @@ export const createGame = (options?: Partial<GameOptions>) => {
     next() {
       _next.set([
         _next.value[1],
-        (Math.random() * 5 + 1 | 0) as No
+        nextFruit(),
       ])
     },
     get signal() {
