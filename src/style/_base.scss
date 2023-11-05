@@ -1,5 +1,9 @@
 @use "./color";
-
-body {
+html {
+  overflow: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
   background: color.$slate-1;
 }
