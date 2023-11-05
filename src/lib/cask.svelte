@@ -78,9 +78,10 @@
 <svelte:window
   on:mousemove|preventDefault={mouse}
   on:click|preventDefault={mouse}
-  on:touchmove|preventDefault|nonpassive={touch}
-  on:touchstart|preventDefault|nonpassive={touch}
-  on:touchend|preventDefault={touch}
+  on:touchmove|nonpassive={touch}
+  on:touchstart|nonpassive={touch}
+  on:touchend={touch}
+  on:contextmenu|preventDefault|stopPropagation
 />
 
 <style lang="scss">
