@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import { onMount, type Snippet } from "svelte";
+  import { on } from "svelte/events";
 
-  const dispatch = createEventDispatcher();
   const toLocalCoords = (x: number, y: number) => {
     const cr = cask.getBoundingClientRect();
     const scale = cr.width / width;
@@ -11,11 +11,12 @@
     };
   };
   const mouse = (e: MouseEvent) => {
+    e.preventDefault();
     const { x, y } = toLocalCoords(e.x, e.y);
     tx = x;
     ty = y;
 
-    dispatch("mouse", {
+    onmouse?.({
       type: e.type === "click" ? "click" : "move",
       x,
       y,
@@ -28,29 +29,51 @@
     }
     const { x, y } = toLocalCoords(tx, ty);
 
-    dispatch("mouse", {
+    onmouse?.({
       type: e.type === "touchend" ? "click" : "move",
       x,
       y,
     });
   };
 
-  export let width: number;
-  export let height: number;
-  export let scale: number;
-  export let isDangerous = false;
+  interface Props {
+    width: number;
+    height: number;
+    scale: number;
+    isDangerous?: boolean;
+    children?: Snippet;
+    onmouse?: (e: { type: "click" | "move"; x: number; y: number }) => void;
+  }
+  let {
+    width,
+    height,
+    scale,
+    isDangerous = false,
+    children,
+    onmouse,
+  }: Props = $props();
 
   let tx = 0;
   let ty = 0;
   let it = 0;
-  let isDangerousAnimationRunning = false;
+  let isDangerousAnimationRunning = $state(false);
 
-  $: {
+  $effect(() => {
     if (isDangerous && !isDangerousAnimationRunning) {
       it = 0;
       isDangerousAnimationRunning = true;
     }
-  }
+  });
+
+  onMount(() => {
+    const unsubscribes = [
+      on(window, "touchmove", touch, { passive: false }),
+      on(window, "touchstart", touch, { passive: false }),
+    ];
+    return () => {
+      unsubscribes.forEach((clear) => clear());
+    };
+  });
 
   let cask: HTMLDivElement;
 </script>
@@ -65,23 +88,24 @@
   <div
     class="cask__border"
     class:cask__border--dangerous={isDangerous || isDangerousAnimationRunning}
-    on:animationiteration={(e) => {
+    onanimationiteration={(e) => {
       it++;
       if (!isDangerous && it % 2 === 0) {
         isDangerousAnimationRunning = false;
       }
     }}
-  />
-  <slot />
+  ></div>
+  {@render children?.()}
 </div>
 
 <svelte:window
-  on:mousemove|preventDefault={mouse}
-  on:click|preventDefault={mouse}
-  on:touchmove|nonpassive={touch}
-  on:touchstart|nonpassive={touch}
-  on:touchend={touch}
-  on:contextmenu|preventDefault|stopPropagation
+  onmousemove={mouse}
+  onclick={mouse}
+  ontouchend={touch}
+  oncontextmenu={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }}
 />
 
 <style lang="scss">
@@ -106,7 +130,8 @@
       bottom: -$border;
       left: -$border;
       border-radius: 2rem;
-      background: linear-gradient($bg, $bg) padding-box,
+      background:
+        linear-gradient($bg, $bg) padding-box,
         linear-gradient(color.$indigo-7, color.$indigo-8) border-box;
       &--dangerous {
         &::before {
@@ -118,7 +143,8 @@
           top: -$border;
           left: -$border;
           border-radius: 2rem;
-          background: linear-gradient($bg, $bg) padding-box,
+          background:
+            linear-gradient($bg, $bg) padding-box,
             radial-gradient(
                 farthest-corner at top,
                 color.$tomato-12,
@@ -127,7 +153,8 @@
               )
               border-box;
           animation: 0.3s infinite alternate pulse ease-in-out;
-          box-shadow: 0 0 4rem rgba(color.$tomato-8, 0.3),
+          box-shadow:
+            0 0 4rem rgba(color.$tomato-8, 0.3),
             0 0 2rem rgba(color.$tomato-8, 0.3),
             0 0 1rem rgba(color.$tomato-8, 0.3);
         }

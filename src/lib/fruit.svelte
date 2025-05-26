@@ -1,10 +1,13 @@
 <script lang="ts">
   import { type No, fruitData } from "./fruit";
 
-  export let no: No = 1;
-  export let x: number = 0;
-  export let y: number = 0;
-  export let rotation: number = 0;
+  interface Props {
+    no?: No;
+    x?: number;
+    y?: number;
+    rotation?: number;
+  }
+  let { no = 1, x = 0, y = 0, rotation = 0 }: Props = $props();
 
   $: data = fruitData[no];
 </script>

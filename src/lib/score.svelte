@@ -1,5 +1,8 @@
 <script lang="ts">
-  export let score: number;
+  interface Props {
+    score: number;
+  }
+  let { score }: Props = $props();
 </script>
 
 <section>

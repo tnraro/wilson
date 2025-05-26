@@ -17,16 +17,19 @@
     canvas.height = h;
   };
 
-  export let canvas: HTMLCanvasElement;
+  interface Props {
+    canvas: HTMLCanvasElement;
+  }
+  let { canvas = $bindable() }: Props = $props();
 
   onMount(() => {
     resize();
   });
 </script>
 
-<canvas bind:this={canvas} />
+<canvas bind:this={canvas}></canvas>
 
-<svelte:window on:resize={resize} />
+<svelte:window onresize={resize} />
 
 <style>
   canvas {

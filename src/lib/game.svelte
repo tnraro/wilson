@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
+  import { onMount } from "svelte";
   import Canvas from "./canvas.svelte";
   import Cask from "./cask.svelte";
   import { fruitData, type No } from "./fruit";
@@ -12,19 +12,17 @@
 
   const cask = { width: 5, height: 6, scale: 100 };
 
-  let canvas: HTMLCanvasElement;
-  let ui: HTMLCanvasElement;
-  let bg: HTMLCanvasElement;
+  let canvas = $state<HTMLCanvasElement>(null!);
+  let ui = $state<HTMLCanvasElement>(null!);
+  let bg = $state<HTMLCanvasElement>(null!);
   let gameOver: HTMLDialogElement;
 
   let game: Game | undefined;
   let currentFruit: No = 1;
 
-  let score = 0
+  let score = $state(0);
 
-  let isDangerous = false;
-
-  let unsubscribes: (() => void)[] = [];
+  let isDangerous = $state(false);
 
   onMount(() => {
     game = createGame({
@@ -37,6 +35,7 @@
         gameoverSystem,
       ],
     });
+    const unsubscribes: (() => void)[] = [];
     unsubscribes.push(
       game.isDangerousSignal.subscribe((value) => {
         isDangerous = value;
@@ -47,7 +46,7 @@
         const isGameOver = !value;
         if (isGameOver) {
           console.log("게임 오버");
-          score = game?.score.signal.value ?? 0
+          score = game?.score.signal.value ?? 0;
           game?.score.save();
           gameOver.showModal();
         }
@@ -59,28 +58,26 @@
       })
     );
     unsubscribes.push(run(game!));
-  });
-  onDestroy(() => {
-    for (const unsubscribe of unsubscribes) {
-      unsubscribe();
-    }
-    game = undefined;
+
+    return () => {
+      for (const unsubscribe of unsubscribes) {
+        unsubscribe();
+      }
+      game = undefined;
+    };
   });
 </script>
 
 <Cask
   {...cask}
-  on:mouse={(e) => {
+  onmouse={(e) => {
     if (game == null) return;
     if (!game.isRunningSignal.value) {
       return;
     }
     const radius = fruitData[currentFruit].radius;
-    game.context.mouseX = Math.max(
-      Math.min(e.detail.x, cask.width - radius),
-      radius
-    );
-    if (e.detail.type === "click") {
+    game.context.mouseX = Math.max(Math.min(e.x, cask.width - radius), radius);
+    if (e.type === "click") {
       if (game.context.isSpawnDelaying) return;
       game.context.isSpawnDelaying = true;
       setTimeout(() => {
@@ -100,12 +97,14 @@
 <dialog bind:this={gameOver}>
   <form class="game-over">
     <h1 class="game-over__title">{score}점</h1>
-    <button class="game-over__button" on:click={() => {
-      location.reload();
-    }}>다시하기</button>
+    <button
+      class="game-over__button"
+      onclick={() => {
+        location.reload();
+      }}>다시하기</button
+    >
   </form>
 </dialog>
-
 
 <style lang="scss">
   @use "../style/color";

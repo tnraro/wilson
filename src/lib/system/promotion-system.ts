@@ -1,7 +1,7 @@
 import { fruitData, type Fruit } from "lib/fruit";
 import type { Game } from "lib/game";
-import type { ISystem } from "./types";
 import { lerp } from "lib/math";
+import type { ISystem } from "./types";
 
 export class PromotionSystem implements ISystem {
   #markedFruits = new WeakSet<Fruit>();
@@ -11,7 +11,7 @@ export class PromotionSystem implements ISystem {
   update(game: Game): void {
     const fruits = game.fruits.signal.value;
     for (const fruit of fruits) {
-      game.world.contactsWith(fruit.collider, (other) => {
+      game.world.contactPairsWith(fruit.collider, (other) => {
         if (this.#markedFruits.has(fruit)) return;
         const fruit2 = game.fruits.colliderToFruit.get(other);
         if (fruit2 == null) return;

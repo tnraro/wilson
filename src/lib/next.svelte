@@ -1,7 +1,10 @@
 <script lang="ts">
   import { fruitData, type No } from "./fruit";
 
-  export let next: No;
+  interface Props {
+    next: No;
+  }
+  let { next }: Props = $props();
 </script>
 
 <section>
